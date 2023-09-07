@@ -1,7 +1,6 @@
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_224;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,7 +13,7 @@ public class Blob{
     private String hdigest;
     private String content;
     public Blob(String fileName) throws IOException{
-        hdigest = new DigestUtils(SHA_224).digestAsHex(fileName);
+        hdigest = new DigestUtils(SHA_1).digestAsHex(fileName);
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         StringBuilder bob = new StringBuilder();
         while(br.ready()){
@@ -25,7 +24,6 @@ public class Blob{
     }
 
     public void writeFile() throws IOException{
-        Files.createDirectories(Paths.get("objects"));
         BufferedWriter bw = new BufferedWriter(new FileWriter(hdigest));
         bw.write(content);
         bw.close();
