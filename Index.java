@@ -7,15 +7,16 @@ import java.util.HashMap;
 
 public class Index {
     HashMap map = new HashMap<String,String>();
+    File index;
     public Index() throws IOException{
-            File index = new File("objects\\Index");
-            Files.createDirectories(Paths.get("objects"));
+                    Files.createDirectories(Paths.get("objects"));
+            index = new File("objects\\Index");
     }
 
     public void writePair(String fileName) throws IOException{
-        Blob b = new Blob(fileName);
+        Blob b = new Blob("objects\\Index");
         map.put(fileName, b.getSHAString());
-        FileWriter fw = new FileWriter(fileName);
+        FileWriter fw = new FileWriter(index);
         fw.write(fileName+":"+b.getSHAString());
     }
 
