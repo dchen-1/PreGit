@@ -3,7 +3,8 @@
         "include": [
             "lib/**/*.jar",
             "/Users/david/Desktop/commons-codec-1.16.0/**/*.jar",
-            "/Users/david/Desktop/Hon Topics/commons-codec-1.16.0/commons-codec-1.16.0.jar"
+            "/Users/david/Desktop/Hon Topics/commons-codec-1.16.0/commons-codec-1.16.0.jar",
+            "PreGit.jar"
         ],
         "exclude": [
             "/Users/david/Desktop/commons-codec-1.16.0/commons-codec-1.16.0-tests.jar",
