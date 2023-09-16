@@ -1,4 +1,4 @@
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
