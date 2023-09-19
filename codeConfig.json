@@ -1,0 +1,49 @@
+[
+    {
+        "className": "Blob",
+        "constructorConfigs": [
+            {
+                "parameterTypes": ["String"],
+                "values": ["file1.txt"]
+            }
+        ],
+        "methodConfigs": [
+            {
+                "methodName": "writeFile",
+                "parameters": [],
+                "values": []
+            },
+            {
+                "methodName": "getSHAString",
+                "parameters": [],
+                "values": []
+            },
+            {
+                "methodName": "writeZip",
+                "parameters": [],
+                "values": []
+            }
+        ]
+    },
+    {
+        "className": "Index",
+        "constructorConfigs": [
+            {
+                "parameterTypes": [],
+                "values": []
+            }
+        ],
+        "methodConfigs": [
+            {
+                "methodName": "writePair",
+                "parameters": ["String"],
+                "values": ["file1.txt"]
+            },
+            {
+                "methodName": "removePair",
+                "parameters": ["String"],
+                "values": ["file1.txt"]
+            }
+        ]
+    }
+]
