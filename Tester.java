@@ -23,7 +23,5 @@ public class Tester {
         Commit c2 = new Commit("Best Author", "Best Summary", c1.hash);
 
         c1.setNext(c2);
-        c1.write();
-        c2.write();
     }
 }

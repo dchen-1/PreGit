@@ -19,10 +19,11 @@ public class Commit {
         this.summary = summary;
         this.previousHash = previousHash;
         this.date = new Date().toString();
-        this.date = date.substring(0, date.length() - 18) + date.substring(date.length() - 5, date.length());
+        this.date = getDate();
         this.treeHash = createTree();
         updateContent();
         this.hash = getHash();
+        write();
     }
 
     public Commit(String author, String summary) throws Exception {
@@ -30,7 +31,8 @@ public class Commit {
     }
 
     public String getDate() {
-        return date;
+        Date d = new Date();
+        return d.toString().substring(0, date.length() - 18) + date.substring(date.length() - 5, date.length());
 
     }
 
