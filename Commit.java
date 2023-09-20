@@ -9,7 +9,7 @@ public class Commit {
     protected String author;
     protected String hash;
     protected String previousHash;
-    protected String nextHash;
+    protected String nextHash = "";
     protected Tree tree;
     protected String treeHash;
     protected String content;
@@ -21,12 +21,12 @@ public class Commit {
         this.date = new Date().toString();
         this.date = date.substring(0, date.length() - 18) + date.substring(date.length() - 5, date.length());
         this.treeHash = createTree();
-        this.content = updateContent();
+        updateContent();
         this.hash = getHash();
     }
 
     public Commit(String author, String summary) throws Exception {
-        this(author, summary, null);
+        this(author, summary, "");
     }
 
     public String getDate() {
@@ -43,7 +43,13 @@ public class Commit {
         FileUtils.writeFile("objects/" + hash, content);
     }
 
-    private String updateContent() {
+    public void setNext(Commit other) throws Exception {
+        this.nextHash = other.hash;
+        updateContent();
+        write();
+    }
+
+    private void updateContent() {
         StringBuilder sb = new StringBuilder();
         sb.append(treeHash + "\n");
         sb.append(previousHash + "\n");
@@ -51,7 +57,7 @@ public class Commit {
         sb.append(author + "\n");
         sb.append(date + "\n");
         sb.append(summary);
-        return sb.toString();
+        content = sb.toString();
     }
 
     private String getHash() throws Exception {

@@ -15,13 +15,15 @@ public class Tester {
         // i.writePair("xtx.txt");
         // i.removePair("txt.txt");
 
-        Commit c = new Commit("Author", "Summary");
+        Commit c1 = new Commit("Author", "Summary");
 
         // System.out.println(c.getDate());
-        c.write();
+        // c1.write();
 
-        Commit c2 = new Commit("Best Author", "Best Summary", c.hash);
+        Commit c2 = new Commit("Best Author", "Best Summary", c1.hash);
 
+        c1.setNext(c2);
+        c1.write();
         c2.write();
     }
 }
