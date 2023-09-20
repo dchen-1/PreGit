@@ -11,90 +11,75 @@ import java.util.HashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-public class Tree
-{
+public class Tree {
     File tree;
     private String hdigest;
     private String content;
     byte[] digest;
-    public Tree() throws IOException
-    {
-        tree = new File ("Tree");
+
+    public Tree() throws IOException {
+        tree = new File("Tree");
         tree.createNewFile();
     }
-    
-    public void add(String line) throws IOException
-    {
-        HashMap<String,String> map = new HashMap<String,String>();
-        if(tree.exists())
-        {
-        BufferedReader br = new BufferedReader(new FileReader(tree));
-        while(br.ready())
-        {
-            String str = br.readLine();
-            String key = str.substring(0,str.indexOf(":"));
-            String value = str.substring(str.indexOf(":")+1);
-            map.put(key,value);
-        }
-        br.close();
+
+    public void add(String line) throws IOException {
+        HashMap<String, String> map = new HashMap<String, String>();
+        if (tree.exists()) {
+            BufferedReader br = new BufferedReader(new FileReader(tree));
+            while (br.ready()) {
+                String str = br.readLine();
+                String key = str.substring(0, str.indexOf(":"));
+                String value = str.substring(str.indexOf(":") + 1);
+                map.put(key, value);
+            }
+            br.close();
         }
         String key = line.substring(0, line.indexOf(":"));
         String value = line.substring(line.indexOf(":") + 1);
         map.put(key, value);
-        FileWriter  fw = new FileWriter(tree);
+        FileWriter fw = new FileWriter(tree);
         int count = 0;
-        for (String str: map.keySet())
-        {
+        for (String str : map.keySet()) {
             count++;
-            if (count != map.size())
-            {
+            if (count != map.size()) {
                 fw.append(str + ":" + map.get(str) + "\n");
-            }
-            else
-            {
+            } else {
                 fw.append(str + ":" + map.get(str));
             }
         }
-        //fw.append(line + "\n");
+        // fw.append(line + "\n");
         fw.close();
     }
 
-    public void remove (String line) throws IOException
-    {
-        HashMap<String,String> map = new HashMap<String,String>();
+    public void remove(String line) throws IOException {
+        HashMap<String, String> map = new HashMap<String, String>();
         BufferedReader br = new BufferedReader(new FileReader(tree));
-        while(br.ready()){
+        while (br.ready()) {
             String str = br.readLine();
-            String key = str.substring(0,str.indexOf(":"));
-            String value = str.substring(str.indexOf(":")+1);
-            map.put(key,value);
+            String key = str.substring(0, str.indexOf(":"));
+            String value = str.substring(str.indexOf(":") + 1);
+            map.put(key, value);
         }
         br.close();
         map.remove(line.substring(0, line.indexOf(":")));
-        FileWriter  fw = new FileWriter(tree);
+        FileWriter fw = new FileWriter(tree);
         int count = 0;
-        for( String str : map.keySet())
-        {
+        for (String str : map.keySet()) {
             count++;
-            if (count != map.size())
-            {
+            if (count != map.size()) {
                 fw.append(str + ":" + map.get(str) + "\n");
-            }
-            else
-            {
+            } else {
                 fw.append(str + ":" + map.get(str));
             }
         }
         fw.close();
     }
 
-    public void save() throws IOException
-    {
+    public void save() throws IOException {
         Files.createDirectories(Paths.get("objects"));
         BufferedReader br = new BufferedReader(new FileReader(tree));
         StringBuilder bob = new StringBuilder();
-        while(br.ready())
-        {
+        while (br.ready()) {
             bob.append((char) br.read());
         }
         content = new String(bob);
@@ -103,8 +88,12 @@ public class Tree
         br.close();
         File file = new File("objects", hdigest);
         file.createNewFile();
-        FileWriter writer = new FileWriter (hdigest);
+        FileWriter writer = new FileWriter(hdigest);
         writer.append(content);
         writer.close();
+    }
+
+    public String getSHA1() {
+        return hdigest;
     }
 }
