@@ -19,7 +19,7 @@ public class Commit {
         this.summary = summary;
         this.previousHash = previousHash;
         this.date = new Date().toString();
-        this.date = getDate();
+        this.date = date.substring(0, date.length() - 18) + date.substring(date.length() - 5, date.length());
         this.treeHash = createTree();
         updateContent();
         this.hash = getHash();
@@ -31,8 +31,7 @@ public class Commit {
     }
 
     public String getDate() {
-        Date d = new Date();
-        return d.toString().substring(0, date.length() - 18) + date.substring(date.length() - 5, date.length());
+        return date;
 
     }
 
