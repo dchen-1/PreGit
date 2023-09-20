@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.Date;
 
 import Utilities.FileUtils;
@@ -18,20 +19,28 @@ public class Commit {
         this.summary = summary;
         this.previousHash = previousHash;
         this.date = new Date().toString();
-        this.date = date.substring(0, date.length() - 18);
-        this.tree = new Tree();
-        this.treeHash = tree.getSHA1();
+        this.date = date.substring(0, date.length() - 18) + date.substring(date.length() - 5, date.length());
+        this.treeHash = createTree();
         this.content = updateContent();
         this.hash = getHash();
     }
 
     public Commit(String author, String summary) throws Exception {
-        this(author, summary, "");
+        this(author, summary, null);
     }
 
     public String getDate() {
         return date;
 
+    }
+
+    public void write() throws Exception {
+        if (!FileUtils.fileExists("objects")) {
+            FileUtils.createDirectory("objects");
+        }
+
+        FileUtils.createFile("objects/" + hash);
+        FileUtils.writeFile("objects/" + hash, content);
     }
 
     private String updateContent() {
@@ -53,6 +62,12 @@ public class Commit {
         sb.append(date + "\n");
         sb.append(summary);
         return FileUtils.sha1(sb.toString());
+    }
+
+    private String createTree() throws Exception {
+        this.tree = new Tree();
+        tree.save();
+        return tree.getSHA1();
     }
 
 }
