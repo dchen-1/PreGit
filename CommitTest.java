@@ -19,8 +19,12 @@ public class CommitTest {
 
     @AfterAll
     static void deleteTestFiles() throws Exception {
-        FileUtils.deleteFile(c1Name);
-        FileUtils.deleteFile(c2Name);
+        if (FileUtils.fileExists(c1Name)) {
+            FileUtils.deleteFile(c1Name);
+        }
+        if (FileUtils.fileExists(c2Name)) {
+            FileUtils.deleteFile(c2Name);
+        }
     }
 
     @Test
@@ -33,7 +37,9 @@ public class CommitTest {
                 c1.treeHash + "\n" + c1.previousHash + "\n" + c1.author + "\n" + c1.getDate() + "\n" + c1.summary),
                 c1Name);
         // checks if the file contents are correct
-        assertEquals(c1.treeHash + c1.previousHash + c1.nextHash + c1.author + c1.getDate() + c1.summary,
+        assertEquals(
+                c1.treeHash + "\n" + c1.previousHash + "\n" + c1.nextHash + "\n" + c1.author + "\n" + c1.getDate()
+                        + "\n" + c1.summary,
                 FileUtils.readFile("objects/" + c1Name));
     }
 
@@ -50,7 +56,9 @@ public class CommitTest {
         // checks if setNext changed the nextHash variable
         assertEquals(c2Name, c1.nextHash);
         // checks if setNext updated its file in objects without changing the name
-        assertEquals(c1.treeHash + c1.previousHash + c1.nextHash + c1.author + c1.getDate() + c1.summary,
+        assertEquals(
+                c1.treeHash + "\n" + c1.previousHash + "\n" + c1.nextHash + "\n" + c1.author + "\n" + c1.getDate()
+                        + "\n" + c1.summary,
                 FileUtils.readFile("objects/" + c1Name));
     }
 
