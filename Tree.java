@@ -15,7 +15,6 @@ public class Tree {
     File tree;
     private String hdigest;
     private String content;
-    byte[] digest;
 
     public Tree() throws IOException {
         tree = new File("Tree");
@@ -76,17 +75,16 @@ public class Tree {
     }
 
     public void save() throws IOException {
-        Files.createDirectories(Paths.get("objects"));
+        Files.createDirectories(Paths.get("./objects/"));
         BufferedReader br = new BufferedReader(new FileReader(tree));
         StringBuilder bob = new StringBuilder();
         while (br.ready()) {
             bob.append((char) br.read());
         }
         content = new String(bob);
-        digest = new DigestUtils(SHA_1).digest(content);
         hdigest = new DigestUtils(SHA_1).digestAsHex(content);
         br.close();
-        File file = new File("objects", hdigest);
+        File file = new File("./objects/", hdigest);
         file.createNewFile();
         FileWriter writer = new FileWriter(hdigest);
         writer.append(content);
@@ -97,21 +95,19 @@ public class Tree {
         return hdigest;
     }
 
-    public String addDirectory(String directoryPath) throws IOException{
-        BufferedReader br = new BufferedReader(new FileReader(directoryPath));
-        FileWriter fw = new FileWriter("Tree");
-        while(br.ready()){
-            File f = new File(br.readLine());
+    public static String addDirectory(String directoryPath) throws IOException{
+        File[] files = new File(directoryPath).listFiles();
+        Tree t = new Tree();
+        for(File f : files){
             if(f.isDirectory()){
-                addDirectory(f.getPath());
-                fw.write("tree : "+new DigestUtils(SHA_1).digestAsHex(f)+f);
+                String sha = addDirectory(f.getPath());
+                t.add("tree:"+sha+":"+f.getPath());
             }
             else{
-            fw.write("blob : "+ new DigestUtils(SHA_1).digestAsHex(f)+f);
+            t.add("blob:"+ new DigestUtils(SHA_1).digestAsHex(f)+":"+f.getPath());
             }
         }
-        br.close();
-        fw.close();
-        return new File(".objects/"+getSHA1()).getPath();
+        t.save();
+        return t.getSHA1();
     }
 }
