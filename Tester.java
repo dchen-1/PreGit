@@ -2,6 +2,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import Utilities.FileUtils;
+
 public class Tester {
     public static void main(String[] args) throws Exception {
         // Index i = new Index();
@@ -23,5 +25,7 @@ public class Tester {
         Commit c2 = new Commit("Best Author", "Best Summary", c1.hash);
 
         c1.setNext(c2);
+        System.out.println(FileUtils.readFile("objects/" + c1.hash));
+
     }
 }
