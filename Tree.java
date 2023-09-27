@@ -96,4 +96,22 @@ public class Tree {
     public String getSHA1() {
         return hdigest;
     }
+
+    public String addDirectory(String directoryPath) throws IOException{
+        BufferedReader br = new BufferedReader(new FileReader(directoryPath));
+        FileWriter fw = new FileWriter("Tree");
+        while(br.ready()){
+            File f = new File(br.readLine());
+            if(f.isDirectory()){
+                addDirectory(f.getPath());
+                fw.write("tree : "+new DigestUtils(SHA_1).digestAsHex(f)+f);
+            }
+            else{
+            fw.write("blob : "+ new DigestUtils(SHA_1).digestAsHex(f)+f);
+            }
+        }
+        br.close();
+        fw.close();
+        return new File(".objects/"+getSHA1()).getPath();
+    }
 }
