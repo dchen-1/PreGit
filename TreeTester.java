@@ -1,13 +1,15 @@
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -15,161 +17,90 @@ import org.junit.jupiter.api.Test;
 
 public class TreeTester
 {
-
+    public String sha1Hash(String str){
+        return new DigestUtils(SHA_1).digestAsHex(str);
+    }
+        
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
-        /*
-         * Utils.writeStringToFile("junit_example_file_data.txt", "test file contents");
-         * Utils.deleteFile("index");
-         * Utils.deleteDirectory("objects");
-         */
+        File file = new File("asdf.txt");
+        FileWriter fw = new FileWriter(file);
+        fw.write("asdf");
+        fw.close();
+        File file2 = new File("ghjk.txt");
+        FileWriter fw2 = new FileWriter(file2);
+        fw2.write("ghjk");
+        fw2.close();
+        new File("./test1").mkdir();
+        new File("./test1/1.txt");
+        new File("./test1/2.txt");
+        new File("./test1/3.txt");
+        new File("./test2").mkdir();
+        new File("./test2/empty").mkdir();
+        new File("./test2/dir").mkdir();
+        new File("./test2/dir/f.txt");
+        new File("./test2/g.txt");
+        new File("./test2/h.txt");
+        new File("./test2/i.txt");
+
     }
 
     @AfterAll
     static void tearDownAfterClass() throws Exception {
-        /*
-         * Utils.deleteFile("junit_example_file_data.txt");
-         * Utils.deleteFile("index");
-         * Utils.deleteDirectory("objects");
-         */
-    }
+        Files.deleteIfExists(Paths.get("asdf.txt"));
+        Files.deleteIfExists(Paths.get("ghjk.txt"));
+        for(File f : new File("./objects").listFiles()){f.delete();}
+        Files.deleteIfExists(Paths.get("./objects/"));
+        for(File ff : new File("./test1").listFiles()){ff.delete();}
+        Files.deleteIfExists(Paths.get("./test1"));
 
-    /*@Test
-    @DisplayName("[8] Test if index and objects are created correctly")
-    void testInitialize() throws Exception {
-
-        // Run the person's code
-        // TestHelper.runTestSuiteMethods("testInitialize");
-
-        // check if the file exists
-        File file = new File("index");
-        Path path = Paths.get("objects");
-
-        assertTrue(file.exists());
-        assertTrue(Files.exists(path));
     }
 
     @Test
-    @DisplayName("[15] Test if adding a blob works.  5 for sha, 5 for file contents, 5 for correct location")
-    void testCreateBlob() throws Exception {
-
-        try {
-
-            // Manually create the files and folders before the 'testAddFile'
-            // MyGitProject myGitClassInstance = new MyGitProject();
-            // myGitClassInstance.init();
-
-            // TestHelper.runTestSuiteMethods("testCreateBlob", file1.getName());
-
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-        }
-
-        // Check blob exists in the objects folder
-        File file_junit1 = new File("objects/" + file1.methodToGetSha1());
-        assertTrue("Blob file to add not found", file_junit1.exists());
-
-        // Read file contents
-        String indexFileContents = MyUtilityClass.readAFileToAString("objects/" + file1.methodToGetSha1());
-        assertEquals("File contents of Blob don't match file contents pre-blob creation", indexFileContents,
-                file1.getContents());
-    }*/
-
-    @Test
-    @DisplayName ("Test if tree is created.")
-    void testTree() throws IOException
-    {
+    @DisplayName("tests tree add")
+    public void testAdd() throws Exception{
         Tree tree = new Tree();
-        File file = new File ("Tree");
-        assertTrue(file.exists());
+        String str = "blob : "+sha1Hash("asdf")+" : asdf.txt";
+        tree.add(str);
+        tree.writeToFile();
+        // tests if the tree file exists
+        assertTrue(Files.exists(Paths.get("./objects/"+sha1Hash(str))));
+        BufferedReader br = new BufferedReader(new FileReader("./objects/"+sha1Hash(str)));
+        String str2 = br.readLine();
+        br.close();
+        // tests if the tree added the file
+        assertEquals(str,str2);
     }
 
     @Test
-    @DisplayName ("Test if string is added to Tree")
-    void testAdd() throws IOException
-    {
-        File file2 = new File ("Tree");// maybe not necessary to delete tree twice. check later
-        file2.delete();
+    @DisplayName("tests tree remove")
+    public void testRemove() throws IOException{
         Tree tree = new Tree();
-        String line = "tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b";
-        tree.add(line);
-        tree.add(line);
-        line = "blob : 81e0268c84067377a0a1fdfb5cc996c93f6dcf9f : file1.txt";
-        tree.add(line);
-        BufferedReader reader = new BufferedReader(new FileReader("Tree"));
-        String content = "";
-        while(reader.ready())
-        {
-            content += (char)reader.read();
-        }
-        content = content.substring(0, content.length());
-        reader.close();
-        assertEquals("blob : 81e0268c84067377a0a1fdfb5cc996c93f6dcf9f : file1.txt\n" + "tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b", content);
-        File file = new File ("Tree");
-        file.delete();
+        String str1 = "blob : "+sha1Hash("asdf")+" : asdf.txt";
+        String str2 = "blob : "+sha1Hash("ghjk")+" : ghjk.txt";
+        tree.add(str1);
+        tree.add(str2);
+        tree.remove("ghjk.txt");
+        tree.writeToFile();
+        // tests if the tree file exists
+        assertTrue(Files.exists(Paths.get("./objects/"+sha1Hash(str1))));
+        BufferedReader br = new BufferedReader(new FileReader("./objects/"+sha1Hash(str1)));
+        String str3 = br.readLine();
+        br.close();
+        // tests if the tree removed the file
+        assertEquals(str1,str3);
     }
 
     @Test
-    @DisplayName ("Test if string is removed from Tree")
-    void testRemove() throws IOException
-    {
-        File file2 = new File ("Tree");// maybe not necessary to delete tree twice. check later
-        file2.delete();
+    @DisplayName("Tests easier directory case")
+    public void testAddDirEasy() throws IOException{
+        File[] files = new File("./test1").listFiles();
+        String str = Tree.addDirectory("./test1");
         Tree tree = new Tree();
-        String line = "tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b";
-        tree.add(line);
-        tree.add(line);
-        line = "blob : 81e0268c84067377a0a1fdfb5cc996c93f6dcf9f : file1.txt";
-        tree.add(line);
-        tree.remove("tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b");
-        BufferedReader reader = new BufferedReader(new FileReader("Tree"));
-        String content = "";
-        while(reader.ready())
-        {
-            content += (char)reader.read();
+        for(File f : files){
+            tree.add(f.getPath());
         }
-        content = content.substring(0, content.length());
-        reader.close();
-        assertEquals("blob : 81e0268c84067377a0a1fdfb5cc996c93f6dcf9f : file1.txt", content);
-        File file = new File ("Tree");
-        file.delete();
-    }
-
-    @Test
-    @DisplayName ("Test if tree is saved to objects folder")
-    void testSave() throws IOException
-    {
-        File file2 = new File ("Tree");
-        file2.delete();
-        Tree tree = new Tree();
-        String line = "tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b";
-        tree.add(line);
-        tree.save();
-        BufferedReader reader = new BufferedReader(new FileReader("ee8612eaba3e603c9cb58e1d26a0b95ee3477652"));
-        String content = "";
-        while(reader.ready())
-        {
-            content += (char)reader.read();
-        }
-        content = content.substring(0, content.length());
-        reader.close();
-        Path path = Paths.get("objects");
-        File file = new File ("ee8612eaba3e603c9cb58e1d26a0b95ee3477652");
-        assertEquals("tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b", content);
-        assertTrue(file.exists());
-        assertTrue(Files.exists(path));
-        File file3 = new File ("Tree");
-        file3.delete();
-        file.delete();
-        File folder = new File ("objects");
-        File[] files = folder.listFiles();
-        if(files != null)
-        { //some JVMs return null for empty dirs
-        for(File f : files)
-        {
-            f.delete();
-        }
-        }
-        folder.delete();
+        tree.writeToFile();
+        assertEquals(tree.getSHA1(),str);
     }
 }

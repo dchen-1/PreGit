@@ -1,4 +1,3 @@
-import java.io.File;
 import java.util.Date;
 
 import Utilities.FileUtils;
@@ -73,7 +72,7 @@ public class Commit {
 
     private String createTree() throws Exception {
         this.tree = new Tree();
-        tree.save();
+        tree.writeToFile();
         return tree.getSHA1();
     }
 

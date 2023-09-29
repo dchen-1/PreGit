@@ -1,96 +1,64 @@
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class Tree {
-    File tree;
-    private String hdigest;
-    private String content;
-
-    public Tree() throws IOException {
-        tree = new File("Tree");
-        tree.createNewFile();
+    ArrayList<String> trees = new ArrayList<String>();
+    HashMap<String,String> blobs = new HashMap<String,String>();
+    String hdigest;
+    public Tree() throws RuntimeException{
+        if(!Files.exists(Paths.get("./objects/"))){
+            new File("./objects/").mkdirs();
+        }
+    }
+    public void add(String add) throws IOException{
+        String str = add.replaceAll("\\s", "");
+        String pre = str.substring(0,str.indexOf(":"));
+        if(pre.equals("tree")){
+            String pos = str.substring(str.indexOf(":")+1);
+            if(!trees.contains(pos)){
+            trees.add(pos);
+            }
+        }
+        else if(pre.equals("blob")){
+            String blub = str.substring(str.indexOf(":")+1);
+            blobs.put(blub.substring(blub.indexOf(":")+1),blub.substring(0,blub.indexOf(":")));
+        }
+    }
+    public void remove(String remove){
+        if(blobs.containsKey(remove)){
+            blobs.remove(remove, blobs.get(remove));
+        }
+        else if(trees.contains(remove)){
+            trees.remove(trees.indexOf(remove));
+        }
     }
 
-    public void add(String line) throws IOException {
-        HashMap<String, String> map = new HashMap<String, String>();
-        if (tree.exists()) {
-            BufferedReader br = new BufferedReader(new FileReader(tree));
-            while (br.ready()) {
-                String str = br.readLine();
-                String key = str.substring(0, str.indexOf(":"));
-                String value = str.substring(str.indexOf(":") + 1);
-                map.put(key, value);
-            }
-            br.close();
+    public void writeToFile() throws IOException{
+        String str = "";
+        for(String s : blobs.keySet()){
+            str+="blob : "+blobs.get(s)+" : "+s+"\n";
         }
-        String key = line.substring(0, line.indexOf(":"));
-        String value = line.substring(line.indexOf(":") + 1);
-        map.put(key, value);
-        FileWriter fw = new FileWriter(tree);
-        int count = 0;
-        for (String str : map.keySet()) {
-            count++;
-            if (count != map.size()) {
-                fw.append(str + ":" + map.get(str) + "\n");
-            } else {
-                fw.append(str + ":" + map.get(str));
-            }
+        for(String ss : trees){
+            str+="tree : "+ss+"\n";
         }
-        // fw.append(line + "\n");
+        if (!str.isEmpty()){
+            str = str.substring(0, str.length()-1);
+        }
+        String sha1 = new DigestUtils(SHA_1).digestAsHex(str);
+        hdigest=sha1;
+        FileWriter fw = new FileWriter("./objects/"+sha1);
+        fw.write(str);
         fw.close();
     }
-
-    public void remove(String line) throws IOException {
-        HashMap<String, String> map = new HashMap<String, String>();
-        BufferedReader br = new BufferedReader(new FileReader(tree));
-        while (br.ready()) {
-            String str = br.readLine();
-            String key = str.substring(0, str.indexOf(":"));
-            String value = str.substring(str.indexOf(":") + 1);
-            map.put(key, value);
-        }
-        br.close();
-        map.remove(line.substring(0, line.indexOf(":")));
-        FileWriter fw = new FileWriter(tree);
-        int count = 0;
-        for (String str : map.keySet()) {
-            count++;
-            if (count != map.size()) {
-                fw.append(str + ":" + map.get(str) + "\n");
-            } else {
-                fw.append(str + ":" + map.get(str));
-            }
-        }
-        fw.close();
-    }
-
-    public void save() throws IOException {
-        Files.createDirectories(Paths.get("./objects/"));
-        BufferedReader br = new BufferedReader(new FileReader(tree));
-        StringBuilder bob = new StringBuilder();
-        while (br.ready()) {
-            bob.append((char) br.read());
-        }
-        content = new String(bob);
-        hdigest = new DigestUtils(SHA_1).digestAsHex(content);
-        br.close();
-        File file = new File("./objects/", hdigest);
-        file.createNewFile();
-        FileWriter writer = new FileWriter(hdigest);
-        writer.append(content);
-        writer.close();
-    }
-
     public String getSHA1() {
         return hdigest;
     }
@@ -107,7 +75,7 @@ public class Tree {
             t.add("blob:"+ new DigestUtils(SHA_1).digestAsHex(f)+":"+f.getPath());
             }
         }
-        t.save();
+        t.writeToFile();
         return t.getSHA1();
     }
 }
