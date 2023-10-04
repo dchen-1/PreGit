@@ -45,10 +45,10 @@ public class Tree {
     public void writeToFile() throws IOException{
         String str = "";
         for(String s : blobs.keySet()){
-            str+="blob : "+blobs.get(s)+" : "+s+"\n";
+            str+="blob:"+blobs.get(s)+":"+s+"\n";
         }
         for(String ss : trees){
-            str+="tree : "+ss+"\n";
+            str+="tree:"+ss+"\n";
         }
         if (!str.isEmpty()){
             str = str.substring(0, str.length()-1);

@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import Utilities.FileUtils;
@@ -34,6 +38,13 @@ public class Commit {
 
     }
 
+    public String getSha(String other) throws Exception{
+        BufferedReader br = new BufferedReader(new FileReader(other));
+        String str = br.readLine();
+        br.close();
+        return str;
+    }
+
     public void write() throws Exception {
         if (!FileUtils.fileExists("objects")) {
             FileUtils.createDirectory("objects");
@@ -60,7 +71,7 @@ public class Commit {
         content = sb.toString();
     }
 
-    private String getHash() throws Exception {
+    public String getHash() throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append(treeHash + "\n");
         sb.append(previousHash + "\n");
@@ -72,7 +83,18 @@ public class Commit {
 
     private String createTree() throws Exception {
         this.tree = new Tree();
+        BufferedReader br = new BufferedReader(new FileReader("Index"));
+        while(br.ready()){
+            tree.add(br.readLine());
+        }
+        br.close();
+        if(previousHash!=""){
+        BufferedReader br2 = new BufferedReader(new FileReader("./objects/"+previousHash));
+        tree.add("tree:"+br2.readLine());
+        br2.close();
+        }
         tree.writeToFile();
+        Files.deleteIfExists(Paths.get("Index"));
         return tree.getSHA1();
     }
 

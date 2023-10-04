@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import Utilities.FileUtils;
+
 public class TreeTester
 {
     public String sha1Hash(String str){
@@ -23,6 +25,7 @@ public class TreeTester
         
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
+
         File file = new File("asdf.txt");
         FileWriter fw = new FileWriter(file);
         fw.write("asdf");
@@ -38,10 +41,14 @@ public class TreeTester
         new File("./test2").mkdir();
         new File("./test2/empty").mkdir();
         new File("./test2/dir").mkdir();
-        new File("./test2/dir/f.txt");
-        new File("./test2/g.txt");
-        new File("./test2/h.txt");
-        new File("./test2/i.txt");
+        File f1 = new File("./test2/dir/f.txt");
+        f1.createNewFile();
+        File ff = new File("./test2/g.txt");
+        ff.createNewFile();
+        File fff = new File("./test2/h.txt");
+        fff.createNewFile();
+        File ffff = new File("./test2/i.txt");
+        ffff.createNewFile();
 
     }
 
@@ -49,18 +56,18 @@ public class TreeTester
     static void tearDownAfterClass() throws Exception {
         Files.deleteIfExists(Paths.get("asdf.txt"));
         Files.deleteIfExists(Paths.get("ghjk.txt"));
-        for(File f : new File("./objects").listFiles()){f.delete();}
-        Files.deleteIfExists(Paths.get("./objects/"));
-        for(File ff : new File("./test1").listFiles()){ff.delete();}
-        Files.deleteIfExists(Paths.get("./test1"));
-
+        FileUtils.deleteDirectory("./objects");
+        FileUtils.deleteDirectory("./test1");
+        FileUtils.deleteDirectory("./test2/empty");
+        FileUtils.deleteDirectory("./test2/dir");
+        FileUtils.deleteDirectory("./test2");
     }
 
     @Test
     @DisplayName("tests tree add")
     public void testAdd() throws Exception{
         Tree tree = new Tree();
-        String str = "blob : "+sha1Hash("asdf")+" : asdf.txt";
+        String str = "blob:"+sha1Hash("asdf")+":asdf.txt";
         tree.add(str);
         tree.writeToFile();
         // tests if the tree file exists
@@ -76,8 +83,8 @@ public class TreeTester
     @DisplayName("tests tree remove")
     public void testRemove() throws IOException{
         Tree tree = new Tree();
-        String str1 = "blob : "+sha1Hash("asdf")+" : asdf.txt";
-        String str2 = "blob : "+sha1Hash("ghjk")+" : ghjk.txt";
+        String str1 = "blob:"+sha1Hash("asdf")+":asdf.txt";
+        String str2 = "blob:"+sha1Hash("ghjk")+":ghjk.txt";
         tree.add(str1);
         tree.add(str2);
         tree.remove("ghjk.txt");
@@ -93,14 +100,51 @@ public class TreeTester
 
     @Test
     @DisplayName("Tests easier directory case")
-    public void testAddDirEasy() throws IOException{
+    public void testAddDirEasy() throws Exception{
+        FileUtils.deleteDirectory("./objects");
         File[] files = new File("./test1").listFiles();
         String str = Tree.addDirectory("./test1");
+        Files.deleteIfExists(Paths.get(str));
         Tree tree = new Tree();
         for(File f : files){
-            tree.add(f.getPath());
+            tree.add("blob:"+sha1Hash(new String(Files.readAllBytes(Paths.get(f.getPath()))))+":"+f.getPath());
         }
         tree.writeToFile();
         assertEquals(tree.getSHA1(),str);
+    }
+
+    @Test
+    @DisplayName("Tests harder directory case")
+    public void testAddMT() throws Exception{
+        FileUtils.deleteDirectory("./objects");
+        Tree tree = new Tree();
+        tree.writeToFile();
+        FileUtils.deleteFile("./objects/"+tree.getSHA1());
+        String str = Tree.addDirectory("./test2/empty");
+        assertEquals(tree.getSHA1(),str);
+
+    }
+
+
+    @Test
+    @DisplayName("Tests harder directory case")
+    public void testAddDirHard() throws Exception{
+        FileUtils.deleteDirectory("./objects");
+        Tree tree = new Tree();
+        tree.add("tree:"+sha1Hash("")+":./test2/empty");
+        File f = new File("./test2/dir/f.txt");
+        String s = "blob:"+sha1Hash(new String(Files.readAllBytes(Paths.get(f.getPath()))))+":"+f.getPath();
+        tree.add("tree:"+sha1Hash(s)+":./test2/dir");
+        f = new File("./test2/g.txt");
+        tree.add("blob:"+sha1Hash(new String(Files.readAllBytes(Paths.get(f.getPath()))))+":./test2/g.txt");
+        f = new File("./test2/h.txt");
+        tree.add("blob:"+sha1Hash(new String(Files.readAllBytes(Paths.get(f.getPath()))))+":./test2/h.txt");
+        f = new File("./test2/i.txt");
+        tree.add("blob:"+sha1Hash(new String(Files.readAllBytes(Paths.get(f.getPath()))))+":./test2/i.txt");
+        tree.writeToFile();
+        FileUtils.deleteFile("./objects/"+tree.getSHA1());
+        String str = Tree.addDirectory("./test2");
+        assertEquals(tree.getSHA1(),str);
+
     }
 }
