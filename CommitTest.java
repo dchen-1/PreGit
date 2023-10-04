@@ -1,10 +1,15 @@
-import static org.junit.Assert.assertEquals;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
+import static org.junit.Assert.*;
 
-import java.io.File;
-import java.nio.file.Path;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import Utilities.FileUtils;
@@ -16,6 +21,23 @@ public class CommitTest {
     protected String c1Summary = "i did nothing";
     protected String c2Author = "Victor again";
     protected String c2Summary = "I DID EVERYTHING";
+    protected static String f1Name = "1.txt";
+    protected static String f2Name = "2.txt";
+    protected static String f3Name = "3.txt";
+    protected static String f4Name = "./dir/4.txt";
+
+    @BeforeAll
+    static void createTestFiles() throws Exception{
+        FileUtils.createFile(f1Name);
+        FileUtils.writeFile(f1Name,"");
+        FileUtils.createFile(f2Name);
+        FileUtils.writeFile(f2Name, "f");
+        FileUtils.createFile(f3Name);
+        FileUtils.writeFile(f3Name, "g");
+        FileUtils.createDirectory("dir");
+        FileUtils.createFile(f4Name);
+        FileUtils.writeFile(f4Name, "h");
+    }
 
     @AfterAll
     static void deleteTestFiles() throws Exception {
@@ -25,10 +47,14 @@ public class CommitTest {
         if (FileUtils.fileExists(c2Name)) {
             FileUtils.deleteFile(c2Name);
         }
+        Files.deleteIfExists(Paths.get(f1Name));
+        Files.deleteIfExists(Paths.get(f2Name));
+        Files.deleteIfExists(Paths.get("Index"));
     }
 
     @Test
     void testWrite() throws Exception {
+        FileUtils.createFile("Index");
         Commit c1 = new Commit(c1Name, c1Summary);
         c1Name = c1.hash;
 
@@ -45,9 +71,10 @@ public class CommitTest {
 
     @Test
     void testSetNext() throws Exception {
+        FileUtils.createFile("Index");
         Commit c1 = new Commit(c1Name, c1Summary);
         c1Name = c1.hash;
-
+        FileUtils.createFile("Index");
         Commit c2 = new Commit(c2Name, c2Summary, c1Name);
         c2Name = c2.hash;
 
@@ -60,6 +87,90 @@ public class CommitTest {
                 c1.treeHash + "\n" + c1.previousHash + "\n" + c1.nextHash + "\n" + c1.author + "\n" + c1.getDate()
                         + "\n" + c1.summary,
                 FileUtils.readFile("objects/" + c1Name));
+    }
+
+    @Test
+    void testCommit1() throws Exception{
+        Index i = new Index();
+        i.writePair(f1Name);
+        i.writePair(f2Name);
+        Commit c1 = new Commit(c1Author,c1Summary);
+        BufferedReader br = new BufferedReader(new FileReader("./objects/"+c1.hash));
+        i = new Index();
+        i.writePair(f1Name);
+        i.writePair(f2Name);
+        String str = br.readLine();
+        String str2 = FileUtils.readFile("Index");
+        assertEquals(str,new DigestUtils(SHA_1).digestAsHex(str2));
+        assertEquals(br.readLine(),c1.previousHash);
+        assertEquals(br.readLine(),c1.nextHash);
+        br.close();
+    }
+
+    @Test
+    public void testCommit2() throws Exception{
+        Index i = new Index();
+        i.writePair(f3Name);
+        i.writePair(f4Name);
+        Commit c1 = new Commit(c1Author,c1Summary);
+        i = new Index();
+        i.addDirectory("dir");
+        i.writePair(f3Name);
+        i.writePair(f4Name);
+        Commit c2 = new Commit(c2Author,c2Summary,c1.getHash());
+        i = new Index();
+        i.addDirectory("dir");
+        i.writePair(f3Name);
+        i.writePair(f4Name);
+        testCommits(c2);
+    }
+
+    @Test
+    public void testCommit4() throws Exception{
+        Index i = new Index();
+        i.writePair(f1Name);
+        i.writePair(f2Name);
+        Commit c1 = new Commit(c1Author,c1Summary);
+        i = new Index();
+        i.writePair(f1Name);
+        i.writePair(f2Name);
+        Commit c2 = new Commit(c2Author,c2Summary,c1.getHash());
+        i = new Index();
+        i.addDirectory("dir");
+        i.writePair(f3Name);
+        i.writePair(f4Name);
+        Commit c3 = new Commit("David","AAAAAAA",c2.getHash());
+        i = new Index();
+        i.addDirectory("dir");
+        i.writePair(f3Name);
+        i.writePair(f4Name);
+        Commit c4 = new Commit("Davidx2","last minute changes",c3.getHash());
+        i = new Index();
+        i.addDirectory("dir");
+        i.writePair(f3Name);
+        i.writePair(f4Name);
+        testCommits(c3);
+        testCommits(c4);
+    }
+
+    public void testCommits(Commit c) throws Exception{
+        BufferedReader br = new BufferedReader(new FileReader("./objects/"+c.getHash()));
+        String str = "";
+        BufferedReader br2 = new BufferedReader(new FileReader("./objects/"+c.treeHash));
+        ArrayList<String> list = new ArrayList<String>();
+        while(br2.ready()){
+            list.add(br2.readLine());
+        }
+        list.remove(list.size()-1);
+        br2.close();
+        for(String s : list){str+=s+"\n";}
+        str = str.substring(0, str.length()-1);
+        String str2 = FileUtils.readFile("Index");
+        assertEquals(new DigestUtils(SHA_1).digestAsHex(str),new DigestUtils(SHA_1).digestAsHex(str2));
+        br.readLine();
+        assertEquals(c.previousHash,br.readLine());
+        assertEquals("",br.readLine());
+        br.close();
     }
 
 }

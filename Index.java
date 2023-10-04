@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
+import Utilities.FileUtils;
+
 public class Index {
     File index;
     public Index() throws IOException{
@@ -14,15 +16,16 @@ public class Index {
             index = new File("Index");
     }
 
-    public void writePair(String fileName) throws IOException{
+    public void writePair(String fileName) throws Exception{
         HashMap<String,String> map = new HashMap<String,String>();
         Blob b = new Blob(fileName);
-        if(index.exists()){
+        if(index.exists()&&index.length()!=0){
         BufferedReader br = new BufferedReader(new FileReader(index));
         while(br.ready()){
             String str = br.readLine();
-            String key = str.substring(0,str.indexOf(":"));
-            String value = str.substring(str.indexOf(":")+1);
+            str = str.substring(str.indexOf(":")+1);
+            String value = str.substring(0,str.indexOf(":"));
+            String key = str.substring(str.indexOf(":")+1);
             map.put(key,value);
         }
         br.close();
@@ -31,7 +34,7 @@ public class Index {
         map.put(fileName, b.getSHAString());
         FileWriter  fw = new FileWriter(index);
         for( String str : map.keySet()){
-            fw.append(str+":"+map.get(str)+"\n");
+            fw.append("blob"+":"+map.get(str)+":"+str+"\n");
         }
         fw.close();
     }
@@ -41,8 +44,9 @@ public class Index {
         BufferedReader br = new BufferedReader(new FileReader(index));
         while(br.ready()){
             String str = br.readLine();
-            String key = str.substring(0,str.indexOf(":"));
-            String value = str.substring(str.indexOf(":")+1);
+            str = str.substring(str.indexOf(":")+1);
+            String value = str.substring(0,str.indexOf(":"));
+            String key = str.substring(str.indexOf(":")+1);
             map.put(key,value);
         }
         br.close();
@@ -52,6 +56,11 @@ public class Index {
             fw.append(str+":"+map.get(str)+"\n");
         }
         fw.close();
+    }
+
+    public void addDirectory(String path) throws Exception{
+        Files.deleteIfExists(Paths.get("Index"));
+        FileUtils.writeFile("Index", FileUtils.readFile("./objects/"+Paths.get(Tree.addDirectory(path))));
     }
 
 }

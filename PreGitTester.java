@@ -23,7 +23,7 @@ Call init + verify index and objects folder are created
 Call add + verify index is updated and objects are created*/
     @Test
     @DisplayName ("Test if blob is created.")
-    void testBlob() throws IOException
+    void testBlob() throws Exception
     {
         String str = "";
         File file = new File ("Test");
@@ -88,7 +88,7 @@ Call add + verify index is updated and objects are created*/
 
     @Test
     @DisplayName ("Test if index is updated and objects are created.")
-    void testWritePair() throws IOException
+    void testWritePair() throws Exception
     {
         File file = new File ("Test");
         File file2 = new File ("index");

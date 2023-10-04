@@ -12,13 +12,15 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import Utilities.FileUtils;
+
 public class Blob{
     private String hdigest;
     private String content;
     byte[] digest;
-    public Blob(String fileName) throws IOException{
-        digest = new DigestUtils(SHA_1).digest(fileName);
-        hdigest = new DigestUtils(SHA_1).digestAsHex(fileName);
+    public Blob(String fileName) throws Exception{
+        digest = new DigestUtils(SHA_1).digest(FileUtils.readFile(fileName));
+        hdigest = new DigestUtils(SHA_1).digestAsHex(FileUtils.readFile(fileName));
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         StringBuilder bob = new StringBuilder();
         while(br.ready()){
@@ -28,8 +30,9 @@ public class Blob{
         br.close();
     }
 
-    public void writeFile() throws IOException{
-        BufferedWriter bw = new BufferedWriter(new FileWriter("objects/"+hdigest));
+    public void writeFile() throws Exception{
+        FileUtils.createFile("./objects/"+hdigest);
+        BufferedWriter bw = new BufferedWriter(new FileWriter("./objects/"+hdigest));
         bw.write(content);
         bw.close();
     }
@@ -40,7 +43,7 @@ public class Blob{
 
     public void writeZip() throws IOException{
         byte[] data = content.getBytes();
-        File f = new File("objects/"+digest.toString());
+        File f = new File("./objects/"+digest.toString());
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(f));
         ZipEntry e = new ZipEntry(digest.toString());
         out.putNextEntry(e);
