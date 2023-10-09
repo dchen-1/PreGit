@@ -3,7 +3,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,7 +67,7 @@ Call add + verify index is updated and objects are created*/
 
     @Test
     @DisplayName ("Test if index and objects folder is created.")
-    void testIndex() throws IOException
+    void testIndex() throws Exception
     {
         File file = new File ("index");
         Index index = new Index();
@@ -127,7 +126,7 @@ Call add + verify index is updated and objects are created*/
 
     @Test
     @DisplayName ("Test if index is updated and objects are created.")
-    void testRemovePair() throws IOException
+    void testRemovePair() throws Exception
     {
         File file = new File ("Test");
         File file2 = new File ("index");

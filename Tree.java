@@ -78,4 +78,19 @@ public class Tree {
         t.writeToFile();
         return t.getSHA1();
     }
+
+    public String addTree(String directoryPath) throws IOException{
+        File[] files = new File(directoryPath).listFiles();
+        for(File f : files){
+            if(f.isDirectory()){
+                String sha = addDirectory(f.getPath());
+                this.add("tree:"+sha+":"+f.getPath());
+            }
+            else{
+            this.add("blob:"+ new DigestUtils(SHA_1).digestAsHex(f)+":"+f.getPath());
+            }
+        }
+        this.writeToFile();
+        return this.getSHA1();
+    }
 }
